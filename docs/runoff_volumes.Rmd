@@ -1,0 +1,37 @@
+---
+title: "Runoff Volumes"
+author: "Peter Menzies"
+date: "8/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+
+source(here("src", "storm_runoff.R"))
+```
+
+```{r}
+# Show function below
+predict_runoff
+
+impervious_values <- seq(0.6, 0.8, 0.01)
+
+runoff_values <- predict_runoff(impervious_values, 182)
+
+runoff_df <- data.frame(
+  "impervious_fraction" = impervious_values, 
+  "runoff_volume" = runoff_values)
+
+runoff_plot <- ggplot(data = runoff_df, aes(x = impervious_fraction, y = runoff_volume)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "Fraction of impervious surface", y = "Volume of runoff (ft^3)")
+
+runoff_plot
+
+ggsave("runoff_plot.png", plot = runoff_plot)
+```
+

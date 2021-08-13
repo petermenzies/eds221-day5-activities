@@ -1,0 +1,65 @@
+---
+title: "Talapia Imports"
+author: "Peter Menzies"
+date: "8/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(janitor)
+library(here)
+```
+
+## Read in data
+
+```{r}
+us_tilapia_imports <- read_csv(here("data", "us_tilapia_imports.csv"))
+
+# check out the column names
+colnames(us_tilapia_imports)
+
+imports_longer <- us_tilapia_imports %>% 
+  pivot_longer(cols = -country, names_to = "year", values_to = "volume_tilapia") %>% 
+  mutate(year = as.numeric(year))
+
+class(imports_longer$year)
+
+yearly_tilapia_tot <- imports_longer %>% 
+  dplyr::group_by(year) %>%
+  summarize(total_imports = sum(volume_tilapia, na.rm = TRUE))
+
+yearly_imports_plot <- ggplot(yearly_tilapia_tot, aes(x = year, y = total_imports)) +
+  geom_line(color = "blue") +
+  labs(x = "Year", y = "Total US tilapia imports (thousands of pounds)")
+
+yearly_imports_plot
+
+ggsave("yearly_tilapia_imports.png", plot = yearly_imports_plot)
+```
+
+### Subset that only retains imports from Ecuador, Honduras, Costa Rica, Mexico
+
+```{r}
+south_central_imports <- filter(imports_longer, country %in% c("Ecuador", "Costa Rica", "Honduras", "Mexico"))
+  
+total_south_central <- south_central_imports %>% 
+  dplyr::group_by(year) %>%
+  summarize(total_imports = sum(volume_tilapia, na.rm = TRUE))
+
+south_central_plot <- ggplot(total_south_central, aes(x = year, y = total_imports)) +
+  geom_line(color = "orange") +
+  labs(x = "Year",
+       y = "Tilapia imports by weight (thousands of pounds)",
+       title = "US tilapia imports from Ecuador, Honduras, Costa Rica, and Mexico")
+
+south_central_plot
+
+ggsave("southern_tilapia_imports.png", plot = south_central_plot, path = here("figs"))
+```
+
+
+
+
+
